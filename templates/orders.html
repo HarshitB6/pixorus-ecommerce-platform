@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>My Orders 📦</h1>
+</div>
+
+{% if orders %}
+{% for order in orders %}
+<div class="order-card">
+    <div class="order-header">
+        <div>
+            <h3>Order #{{ order.id }}</h3>
+            <small>Placed on {{ order.created_at|format_date }}</small>
+        </div>
+        <span class="status-badge status-{{ order.status.lower().replace(' ', '-') }}">{{ order.status }}</span>
+    </div>
+
+    <!-- ORDER TRACKER -->
+    <div class="tracker">
+        {% set steps = ['Processing', 'Shipped', 'Out for Delivery', 'Delivered'] %}
+        {% set step_icons = ['📋', '📦', '🚚', '✅'] %}
+        {% set current_idx = steps.index(order.status) if order.status in steps else 0 %}
+        {% for i in range(steps|length) %}
+        <div class="tracker-step {% if i <= current_idx %}active{% endif %}">
+            <div class="tracker-icon">{{ step_icons[i] }}</div>
+            <div class="tracker-label">{{ steps[i] }}</div>
+        </div>
+        {% if not loop.last %}
+        <div class="tracker-line {% if i < current_idx %}active{% endif %}"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- ITEMS -->
+    {% if order_items[order.id] %}
+    <div class="order-items">
+        {% for item in order_items[order.id] %}
+        <div class="order-item">
+            <img src="{{ item.image }}" alt="{{ item.name }}" class="order-item-img">
+            <div>
+                <p>{{ item.name }}</p>
+                <small>Qty: {{ item.quantity }} × ₹{{ "{:,.0f}".format(item.price) }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="order-footer">
+        <span>Deliver to: {{ order.address }}</span>
+        <strong>Total: ₹{{ "{:,.0f}".format(order.total) }}</strong>
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>No orders yet</h2>
+    <p>Place your first order and it'll appear here.</p>
+    <a href="/" class="btn btn-large">Start Shopping</a>
+</div>
+{% endif %}
+
+{% endblock %}

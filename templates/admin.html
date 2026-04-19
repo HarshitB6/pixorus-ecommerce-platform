@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>⚙ Admin Dashboard</h1>
+</div>
+
+<!-- STATS -->
+<div class="admin-stats">
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div>
+            <h3>{{ users|length }}</h3>
+            <p>Total Users</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div>
+            <h3>{{ products|length }}</h3>
+            <p>Products</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div>
+            <h3>{{ total_orders }}</h3>
+            <p>Total Orders</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div>
+            <h3>₹{{ "{:,.0f}".format(total_revenue) }}</h3>
+            <p>Revenue (Delivered)</p>
+        </div>
+    </div>
+</div>
+
+<!-- TABS -->
+<div class="admin-tabs">
+    <button class="tab-btn active" onclick="showTab('products')">Products</button>
+    <button class="tab-btn" onclick="showTab('orders')">Orders</button>
+    <button class="tab-btn" onclick="showTab('users')">Users</button>
+    <button class="tab-btn" onclick="showTab('add')">Add Product</button>
+</div>
+
+<!-- PRODUCTS TAB -->
+<div id="tab-products" class="tab-content active">
+    <h2>All Products</h2>
+    <table class="admin-table">
+        <thead>
+            <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td><img src="{{ p.image }}" class="table-thumb"> {{ p.name }}</td>
+                <td>{{ p.category or '—' }}</td>
+                <td>₹{{ "{:,.0f}".format(p.price) }}</td>
+                <td>{{ p.stock }}</td>
+                <td>
+                    <button type="button" class="btn btn-small" onclick="toggleProductEdit('{{ p.id }}')">Edit</button>
+                    <a href="/delete_product/{{ p.id }}" class="btn-danger"
+                       onclick="return confirm('Delete {{ p.name }}?')">Delete</a>
+                </td>
+            </tr>
+            <tr id="edit-product-{{ p.id }}" class="product-edit-row">
+                <td colspan="6">
+                    <form action="/update_product/{{ p.id }}" method="post" class="product-edit-form">
+                        <div class="form-group">
+                            <label>Product Name</label>
+                            <input type="text" name="name" class="form-input" value="{{ p.name }}" placeholder="Enter product name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price</label>
+                            <input type="number" name="price" class="form-input" value="{{ p.price }}" min="0" step="0.01" placeholder="e.g. 1999" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Count</label>
+                            <input type="number" name="stock" class="form-input" value="{{ p.stock }}" min="0" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="category_id" class="form-input" required>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if cat.id == p.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group product-edit-wide">
+                            <label>Image URL</label>
+                            <input type="text" name="image" class="form-input" value="{{ p.image or '' }}" placeholder="https://...">
+                        </div>
+                        <div class="form-group product-edit-wide">
+                            <label>Description</label>
+                            <textarea name="description" class="form-input" rows="3">{{ p.description or '' }}</textarea>
+                        </div>
+                        <div class="product-edit-actions">
+                            <button type="submit" class="btn">Save Changes</button>
+                            <button type="button" class="btn btn-outline" onclick="toggleProductEdit('{{ p.id }}')">Cancel</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ORDERS TAB -->
+<div id="tab-orders" class="tab-content">
+    <h2>All Orders</h2>
+    <table class="admin-table">
+        <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Update</th></tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>#{{ o.id }}</td>
+                <td>{{ o.username }}</td>
+                <td>₹{{ "{:,.0f}".format(o.total) }}</td>
+                <td><span class="status-badge status-{{ o.status.lower().replace(' ', '-') }}">{{ o.status }}</span></td>
+                <td>{{ o.created_at|format_date }}</td>
+                <td>
+                    <form action="/update_order_status/{{ o.id }}" method="post" style="display:flex;gap:5px">
+                        <select name="status" class="form-input" style="width:auto;padding:5px">
+                            <option>Processing</option>
+                            <option>Shipped</option>
+                            <option>Out for Delivery</option>
+                            <option>Delivered</option>
+                            <option>Cancelled</option>
+                        </select>
+                        <button type="submit" class="btn" style="padding:5px 12px">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- USERS TAB -->
+<div id="tab-users" class="tab-content">
+    <h2>Registered Users</h2>
+    <table class="admin-table">
+        <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>#{{ u.id }}</td>
+                <td>{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{% if u.is_admin %}<span class="badge-gold">Admin</span>{% else %}User{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ADD PRODUCT TAB -->
+<div id="tab-add" class="tab-content">
+    <h2>Add New Product</h2>
+    <div class="admin-form">
+        <form action="/add_product" method="post">
+            <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" name="name" class="form-input" placeholder="e.g. Smart Speaker" required>
+            </div>
+            <div class="form-group">
+                <label>Price (₹)</label>
+                <input type="number" name="price" class="form-input" placeholder="e.g. 1999" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Stock Count</label>
+                <input type="number" name="stock" class="form-input" placeholder="e.g. 100" min="0" step="1" value="100" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category_id" class="form-input" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Image URL</label>
+                <input type="text" name="image" class="form-input" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" class="form-input" placeholder="Product description..." rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-large">Add Product</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function toggleProductEdit(id) {
+    const row = document.getElementById('edit-product-' + id);
+    if (row) row.classList.toggle('active');
+}
+</script>
+
+{% endblock %}

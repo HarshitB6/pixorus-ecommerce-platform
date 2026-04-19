@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HERO SLIDER -->
+<div class="hero-slider">
+    <div class="slide active" onclick="window.location.href='/?cat={{ category_lookup.get('Electronics', 1) }}'" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+        <div class="slide-text">
+            <h1>Tech That Moves You</h1>
+            <p>Discover the latest in electronics and gadgets</p>
+            <a href="/?cat={{ category_lookup.get('Electronics', 1) }}" class="hero-btn">Shop Electronics</a>
+        </div>
+    </div>
+    <div class="slide" onclick="window.location.href='/?cat={{ category_lookup.get('Footwear', 2) }}'" style="background: linear-gradient(135deg, #1a2a1a 0%, #1e3a1e 50%, #0f4a0f 100%);">
+        <div class="slide-text">
+            <h1>Step Into Style</h1>
+            <p>Premium footwear for every occasion</p>
+            <a href="/?cat={{ category_lookup.get('Footwear', 2) }}" class="hero-btn">Shop Footwear</a>
+        </div>
+    </div>
+    <div class="slide" onclick="window.location.href='/?cat={{ category_lookup.get('Gaming', 5) }}'" style="background: linear-gradient(135deg, #2a1a1a 0%, #3a1e1e 50%, #4a0f0f 100%);">
+        <div class="slide-text">
+            <h1>Game. Win. Repeat.</h1>
+            <p>Level up with premium gaming gear</p>
+            <a href="/?cat={{ category_lookup.get('Gaming', 5) }}" class="hero-btn">Shop Gaming</a>
+        </div>
+    </div>
+    <div class="slider-dots">
+        <span class="dot active" onclick="goSlide(0)"></span>
+        <span class="dot" onclick="goSlide(1)"></span>
+        <span class="dot" onclick="goSlide(2)"></span>
+    </div>
+</div>
+
+<!-- CATEGORY QUICK LINKS -->
+<div class="category-strip">
+    {% for cat in categories %}
+    <a href="/?cat={{ cat.id }}" class="cat-chip">{{ cat.name }}</a>
+    {% endfor %}
+</div>
+
+<!-- RECOMMENDED SECTION -->
+{% if recommended %}
+<section class="section">
+    <h2 class="section-title">Recommended For You</h2>
+    <div class="product-grid">
+        {% for p in recommended %}
+        <div class="card">
+            <a href="/product/{{ p.id }}">
+                <img src="{{ p.image }}" class="product-img" alt="{{ p.name }}">
+            </a>
+            <div class="card-body">
+                <h4>{{ p.name }}</h4>
+                <p class="price">Rs. {{ "{:,.0f}".format(p.price) }}</p>
+                <small>{{ p.stock }} in stock</small>
+                <div class="card-actions">
+                    <a href="/product/{{ p.id }}" class="btn btn-outline">View</a>
+                    {% if p.stock > 0 %}
+                    <a href="/add_to_cart/{{ p.id }}" class="btn">Add to Cart</a>
+                    {% else %}
+                    <span class="btn btn-disabled">Out of Stock</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- ALL PRODUCTS -->
+<section class="section">
+    <div class="section-header">
+        <h2 class="section-title">
+            {% if q %}Results for "{{ q }}"{% else %}All Products{% endif %}
+        </h2>
+        <span class="product-count">{{ products|length }} items</span>
+    </div>
+
+    {% if products %}
+    <div class="product-grid">
+        {% for p in products %}
+        <div class="card">
+            <a href="/product/{{ p.id }}">
+                <img src="{{ p.image }}" class="product-img" alt="{{ p.name }}">
+            </a>
+            <div class="card-body">
+                <span class="category-tag">{{ p.category or 'General' }}</span>
+                <h4>{{ p.name }}</h4>
+                <p class="price">Rs. {{ "{:,.0f}".format(p.price) }}</p>
+                <small>{{ p.stock }} in stock</small>
+                <div class="card-actions">
+                    <a href="/product/{{ p.id }}" class="btn btn-outline">Details</a>
+                    {% if p.stock > 0 %}
+                    <a href="/add_to_cart/{{ p.id }}" class="btn">+ Cart</a>
+                    {% else %}
+                    <span class="btn btn-disabled">Out of Stock</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No products found. <a href="/">Clear filters</a></p>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}

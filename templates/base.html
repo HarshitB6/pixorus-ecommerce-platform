@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixorus — Your Online Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <a href="/" class="logo">PIXORUS</a>
+
+    <form class="nav-search" action="/" method="get">
+        <input type="text" name="q" placeholder="Search products..." value="{{ q if q is defined else '' }}">
+        <button type="submit">&#9906;</button>
+    </form>
+
+    <div class="nav-right">
+        {% if user %}
+            <span class="nav-greeting">Hi, {{ user.name.split()[0] }}</span>
+            <a href="/orders">Orders</a>
+            {% if user.is_admin %}<a href="/admin" class="admin-link">Admin</a>{% endif %}
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+        <a href="/cart" class="cart-link">
+            🛒 Cart
+            {% if cart_count and cart_count > 0 %}
+                <span class="cart-badge">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- ===== LAYOUT ===== -->
+<div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <p class="sidebar-title">Categories</p>
+        <a href="/" class="{% if not cat_id is defined or not cat_id %}active{% endif %}">All Products</a>
+        {% if categories is defined %}
+            {% for cat in categories %}
+                <a href="/?cat={{ cat.id }}" class="{% if cat_id is defined and cat_id|string == cat.id|string %}active{% endif %}">
+                    {{ cat.name }}
+                </a>
+            {% endfor %}
+        {% endif %}
+
+        {% if user and user.is_admin %}
+        <div class="sidebar-divider"></div>
+        <a href="/admin" class="admin-link">⚙ Admin Panel</a>
+        {% endif %}
+    </aside>
+
+    <!-- PAGE CONTENT -->
+    <main class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Checkout</h1>
+</div>
+
+<div class="checkout-layout">
+    <!-- FORM -->
+    <div class="checkout-form">
+        <h2>Delivery Details</h2>
+        <form action="/checkout" method="post" class="api-form">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" class="form-input" placeholder="Your full name" value="{{ user.name if user else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <textarea name="address" class="form-input" placeholder="House/Flat, Street, City, State, PIN" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" class="form-input" placeholder="10-digit mobile number" required>
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <div class="payment-options">
+                    <label class="payment-opt">
+                        <input type="radio" name="payment" value="cod" checked> Cash on Delivery
+                    </label>
+                    <label class="payment-opt">
+                        <input type="radio" name="payment" value="upi"> UPI / Net Banking
+                    </label>
+                    <label class="payment-opt">
+                        <input type="radio" name="payment" value="card"> Credit / Debit Card
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-large" style="width:100%">🎉 Place Order</button>
+        </form>
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="cart-summary">
+        <h2>Your Order</h2>
+        {% for item in items %}
+        <div class="summary-item">
+            <span>{{ item.name }} × {{ item.quantity }}</span>
+            <span>₹{{ "{:,.0f}".format(item.subtotal) }}</span>
+        </div>
+        {% endfor %}
+        <div class="summary-divider"></div>
+        <div class="summary-row">
+            <span>Delivery</span><span class="free-tag">FREE</span>
+        </div>
+        <div class="summary-total">
+            <span>Total</span>
+            <span>₹{{ "{:,.0f}".format(total) }}</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
